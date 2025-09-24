@@ -8,7 +8,7 @@ exports.handler = async (event, context) => {
   }
 
   // Auth0 토큰 검증
-  const response = await fetch(`https://YOUR_DOMAIN.auth0.com/userinfo`, {
+  const response = await fetch(`dev-dks7mpcyjjsxcrje.us.auth0.com`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
