@@ -1,18 +1,19 @@
 backend:
   name: git-gateway
   branch: main
+  auth_endpoint: "/.netlify/functions/auth"
 
-media_folder: "photos/{{slug}}"
-public_folder: "/photos/{{slug}}"
+media_folder: "static/uploads"
+public_folder: "/uploads"
 
 collections:
   - name: "photos"
-    label: "QR Photos"
+    label: "Photos"
     folder: "content/photos"
     create: true
-    slug: "{{slug}}"
+    extension: "json"
     format: "json"
     fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Image 1", name: "image1", widget: "image"}
-      - {label: "Image 2", name: "image2", widget: "image"}
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "image1", label: "Image 1", widget: "image" }
+      - { name: "image2", label: "Image 2", widget: "image" }
