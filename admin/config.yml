@@ -9,10 +9,10 @@ public_folder: "/uploads"
 collections:
   - name: "photos"
     label: "Photos"
-    folder: "content/photos"
+    folder: "qr-pages"
     create: true
-    extension: "json"
-    format: "json"
+    extension: "html"
+    format: "html"
     fields:
       - { name: "title", label: "Title", widget: "string" }
       - { name: "image1", label: "Image 1", widget: "image" }

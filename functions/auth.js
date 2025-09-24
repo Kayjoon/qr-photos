@@ -7,8 +7,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 401, body: "Unauthorized" };
   }
 
-  // Auth0 토큰 검증
-  const response = await fetch(`dev-dks7mpcyjjsxcrje.us.auth0.com`, {
+  const response = await fetch(`https://YOUR_DOMAIN.auth0.com/userinfo`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
