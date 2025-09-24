@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR Photos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <div id="content">
+      <div id="images"></div>
+      <div id="msg"></div>
+      <div style="margin-top:18px;">
+        <a href="/admin/" style="color:#88f;text-decoration:underline">관리자</a>
+        <span style="color:#777;margin-left:10px">|</span>
+        <a href="/preview.html" style="color:#88f;margin-left:10px;text-decoration:underline">미리보기/QR 생성</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function getIdFromPath(){
+      const p = location.pathname.replace(/^\//,'').replace(/\/$/,''); 
+      return p || null;
+    }
+    function showMessage(t){ document.getElementById('msg').textContent = t || ''; }
+
+    async function tryHead(url){
+      try {
+        const res = await fetch(url, { method: 'HEAD' });
+        return res.ok;
+      } catch(e){
+        return false;
+      }
+    }
+
+    (async function(){
+      const id = getIdFromPath();
+      const imagesContainer = document.getElementById('images');
+      if(!id){
+        showMessage("QR 또는 ID로 접속하세요. 예: /1, /2 ...");
+        return;
+      }
+      showMessage("로딩 중...");
+      try {
+        const resp = await fetch(`/content/photos/${encodeURIComponent(id)}.json`);
+        if(resp.ok){
+          const data = await resp.json();
+          imagesContainer.innerHTML = '';
+          const arr = [data.image1, data.image2].filter(Boolean);
+          if(arr.length===0){ showMessage("이미지 정보가 없습니다."); return; }
+          arr.forEach(src=>{
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = '';
+            img.loading = 'lazy';
+            imagesContainer.appendChild(img);
+          });
+          showMessage('');
+          return;
+        }
+      } catch(e){}
+      const p1 = `/photos/${encodeURIComponent(id)}/1.jpg`;
+      const p2 = `/photos/${encodeURIComponent(id)}/2.jpg`;
+      const ok1 = await tryHead(p1);
+      const ok2 = await tryHead(p2);
+      imagesContainer.innerHTML = '';
+      if(ok1){ const img=document.createElement('img'); img.src=p1; imagesContainer.appendChild(img); }
+      if(ok2){ const img=document.createElement('img'); img.src=p2; imagesContainer.appendChild(img); }
+      if(!ok1 && !ok2){ showMessage("사진을 찾을 수 없습니다. 관리자에게 문의하세요."); } else showMessage('');
+    })();
+  </script>
+</body>
+</html>
