@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         data.reverse().forEach((item, index) => {
             const pageId = data.length - 1 - index;
-            const displayUrl = `display.html?id=${pageId}`;
+            const displayUrl = `${window.location.origin}${window.location.pathname.replace('display.html', '')}display.html?id=${pageId}`;
 
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
