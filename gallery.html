@@ -75,7 +75,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // (기존의 링크 복사 버튼 이벤트 리스너 코드는 그대로 둡니다)
-
+        document.querySelectorAll('.copy-button').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const link = event.target.getAttribute('data-link');
+        navigator.clipboard.writeText(link).then(() => {
+            alert('링크가 복사되었습니다!');
+        }).catch(err => {
+            console.error('클립보드 복사 실패:', err); // 오류를 콘솔에 출력
+            alert('링크 복사에 실패했습니다.');
+        });
+    });
+});
     } catch (error) {
         galleryGrid.innerHTML = `<p>${error.message}</p>`;
         console.error('Error fetching data:', error);
