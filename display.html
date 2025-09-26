@@ -32,7 +32,7 @@
             const dataUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${DATA_FILE}`;
             
             try {
-                const response = await fetch(gasUrl);
+                const response = await fetch(dataUrl); // <<<<<<<<<<< 이렇게 수정!
                 const data = await response.json();
                 const imageData = data[parseInt(pageId, 10)];
 
