@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갤러리</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .gallery-item { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; text-align: center; }
+        .gallery-item img { width: 100%; height: 180px; object-fit: cover; }
+        .gallery-item-menu { padding: 10px; }
+        .copy-button { padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
+        .copy-button:hover { background-color: #0056b3; }
+        .nav-links { text-align: center; margin: 20px 0; }
+        .nav-links a { text-decoration: none; color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>전체 페이지 미리보기</h1>
+        <div class="nav-links">
+            <a href="upload.html">새 사진 업로드하기</a>
+        </div>
+        <div id="gallery-grid" class="gallery-grid">
+            <p>데이터를 불러오는 중입니다...</p>
+        </div>
+    </div>
+
+    <script>
+        const GITHUB_USER = 'Kayjoon'; // 본인 깃허브 사용자 이름
+        const GITHUB_REPO = 'qr-photos'; // 1단계에서 만든 저장소 이름
+        const DATA_FILE = 'database.json'; // 데이터를 저장할 파일 이름
+        // document.addEventListener('DOMContentLoaded', async () => { ... }); 안의 내용을 교체
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const galleryGrid = document.getElementById('gallery-grid');
+    // 깃허브 Raw 파일 주소에서 데이터를 직접 가져옴
+    const dataUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${DATA_FILE}`;
+
+    try {
+        const response = await fetch(dataUrl);
+        // 캐시 문제 방지를 위해 헤더 추가
+        if (!response.ok && response.status !== 404) { // 404는 파일이 아직 없을 때이므로 정상 처리
+             throw new Error('데이터를 불러오는데 실패했습니다.');
+        }
+
+        let data = [];
+        if (response.status !== 404) {
+             data = await response.json();
+        }
+
+        galleryGrid.innerHTML = '';
+
+        if (data.length === 0) {
+            galleryGrid.innerHTML = '<p>아직 업로드된 사진이 없습니다.</p>';
+            return;
+        }
+
+        data.reverse().forEach((item, index) => {
+            const pageId = data.length - 1 - index;
+            const displayUrl = `${window.location.origin}${window.location.pathname.replace('gallery.html', '')}display.html?id=${pageId}`;
+
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            galleryItem.innerHTML = `
+                <img src="${item.image1}" alt="페이지 ${pageId + 1} 미리보기">
+                <div class="gallery-item-menu">
+                    <button class="copy-button" data-link="${displayUrl}">페이지 링크 복사</button>
+                </div>
+            `;
+            galleryGrid.appendChild(galleryItem);
+        });
+
+        // (기존의 링크 복사 버튼 이벤트 리스너 코드는 그대로 둡니다)
+
+    } catch (error) {
+        galleryGrid.innerHTML = `<p>${error.message}</p>`;
+        console.error('Error fetching data:', error);
+    }
+});
+    </script>
+</body>
+</html>

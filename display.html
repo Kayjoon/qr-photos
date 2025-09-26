@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사진 페이지</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f0f2f5; }
+        .image-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 20px; padding: 20px; box-sizing: border-box; }
+        img { max-width: 90%; max-height: 45vh; border: 2px solid white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div id="image-container" class="image-container">
+        <p>사진을 불러오는 중...</p>
+    </div>
+
+    <script>
+        const GITHUB_USER = 'Kayjoon'; // 본인 깃허브 사용자 이름
+        const GITHUB_REPO = 'qr-photos'; // 1단계에서 만든 저장소 이름
+        const DATA_FILE = 'database.json'; // 데이터를 저장할 파일 이름
+        document.addEventListener('DOMContentLoaded', async () => {
+            const imageContainer = document.getElementById('image-container');
+            const params = new URLSearchParams(window.location.search);
+            const pageId = params.get('id');
+
+            if (pageId === null) {
+                imageContainer.innerHTML = '<p>잘못된 접근입니다.</p>';
+                return;
+            }
+
+            const dataUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${DATA_FILE}`;
+            
+            try {
+                const response = await fetch(gasUrl);
+                const data = await response.json();
+                const imageData = data[parseInt(pageId, 10)];
+
+                if (imageData) {
+                    imageContainer.innerHTML = `
+                        <img src="${imageData.image1}" alt="업로드된 사진 1">
+                        <img src="${imageData.image2}" alt="업로드된 사진 2">
+                    `;
+                } else {
+                    imageContainer.innerHTML = '<p>해당 페이지를 찾을 수 없습니다.</p>';
+                }
+
+            } catch (error) {
+                imageContainer.innerHTML = '<p>사진을 불러오는데 실패했습니다.</p>';
+                console.error('Error fetching image data:', error);
+            }
+        });
+    </script>
+</body>
+</html>

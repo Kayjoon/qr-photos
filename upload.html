@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사진 업로드</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; }
+        .upload-area { margin-bottom: 20px; }
+        #image-upload { display: none; }
+        .upload-label { display: block; padding: 20px; border: 2px dashed #007bff; border-radius: 8px; text-align: center; cursor: pointer; background-color: #f8f9fa; }
+        .preview-area { display: flex; justify-content: space-around; margin-top: 20px; min-height: 200px; }
+        .preview-box { width: 45%; text-align: center; }
+        .preview-box img { max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 4px; }
+        .preview-box p { color: #888; }
+        button { width: 100%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 18px; margin-top: 20px; }
+        button:disabled { background-color: #aaa; cursor: not-allowed; }
+        .nav-links { text-align: center; margin-top: 20px; }
+        .nav-links a { margin: 0 15px; text-decoration: none; color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>사진 2장 업로드</h1>
+        <div class="nav-links">
+            <a href="gallery.html">갤러리 바로가기</a>
+        </div>
+        <div class="upload-area">
+            <label for="image-upload" class="upload-label">여기를 클릭하여 사진 2장을 선택하세요</label>
+            <input type="file" id="image-upload" accept="image/*" multiple>
+        </div>
+        <div class="preview-area">
+            <div class="preview-box" id="preview1"><p>사진 1</p></div>
+            <div class="preview-box" id="preview2"><p>사진 2</p></div>
+        </div>
+        <button id="submit-button" disabled>업로드하기</button>
+        <p id="status" style="text-align: center; margin-top: 15px;"></p>
+    </div>
+
+    <script>
+        const GITHUB_USER = 'Kayjoon'; // 본인 깃허브 사용자 이름
+        const GITHUB_REPO = 'qr-photos'; // 1단계에서 만든 저장소 이름
+        const DATA_FILE = 'database.json'; // 데이터를 저장할 파일 이름
+        const imageUpload = document.getElementById('image-upload');
+        const preview1 = document.getElementById('preview1');
+        const preview2 = document.getElementById('preview2');
+        const submitButton = document.getElementById('submit-button');
+        const status = document.getElementById('status');
+        let selectedFiles = [];
+
+        imageUpload.addEventListener('change', () => {
+            if (imageUpload.files.length !== 2) {
+                alert('사진 2장을 선택해야 합니다.');
+                imageUpload.value = ''; // 선택 초기화
+                return;
+            }
+            
+            selectedFiles = Array.from(imageUpload.files);
+
+            preview1.innerHTML = `<img src="${URL.createObjectURL(selectedFiles[0])}" alt="미리보기 1">`;
+            preview2.innerHTML = `<img src="${URL.createObjectURL(selectedFiles[1])}" alt="미리보기 2">`;
+
+            submitButton.disabled = false;
+        });
+
+        // submitButton.addEventListener('click', async () => { ... }); 안의 내용을 교체
+
+        submitButton.addEventListener('click', async () => {
+        status.textContent = '업로드 중...';
+        submitButton.disabled = true;
+
+    // 1. ImgBB에 이미지 업로드 (이 부분은 기존과 동일)
+        const apiKey = '여기에_ImgBB_API_키를_입력하세요';
+        const imgbbUrl = `https://api.imgbb.com/1/upload?key=${apiKey}`;
+        const uploadedUrls = [];
+
+        try {
+            for (const file of selectedFiles) {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await fetch(imgbbUrl, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    uploadedUrls.push(result.data.url);
+                } else {
+                    throw new Error('이미지 업로드 실패: ' + result.error.message);
+                }
+            }
+
+            status.textContent = '데이터베이스에 저장 중...';
+
+        // 2. Netlify의 서버리스 함수를 호출하여 깃허브에 데이터 저장
+            const response = await fetch('/.netlify/functions/updateData', {
+                method: 'POST',
+                body: JSON.stringify({
+                    image1: uploadedUrls[0],
+                    image2: uploadedUrls[1]
+                })
+            });
+
+            if (!response.ok) {
+                const errorResult = await response.json();
+                throw new Error(errorResult.message || '데이터 저장에 실패했습니다.');
+            }
+
+            status.textContent = '업로드 및 저장 완료!';
+            alert('성공적으로 업로드되었습니다!');
+            window.location.href = 'gallery.html';
+
+        } catch (error) {
+            status.textContent = `오류 발생: ${error.message}`;
+            submitButton.disabled = false;
+        }
+    });
+    </script>
+</body>
+</html>
